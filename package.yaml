@@ -1,0 +1,28 @@
+name: SecurityAdvisoriesBuilder-hs
+
+version: 0.1.0.0
+
+ghc-options: -Wall
+
+dependencies:
+  - base
+  - yaml >= 0.10.1.1
+
+library:
+  source-dirs: src/
+
+executables:
+  SecurityAdvisoriesBuilder-hs-exe:
+    main: Main.hs
+    source-dirs: app/
+    dependencies:
+      SecurityAdvisoriesBuilder-hs
+
+tests:
+  SecurityAdvisoriesBuilder-hs-test:
+    main: Spec.hs
+    source-dirs: test/
+    dependencies:
+      - SecurityAdvisoriesBuilder-hs
+      - hspec >= 2.5.6
+      - QuickCheck >= 2.12.4

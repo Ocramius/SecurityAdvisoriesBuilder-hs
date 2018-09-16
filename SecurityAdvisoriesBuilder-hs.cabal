@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9454487a771fd264a7489542536278cb89d84de606ae996a254e28e8e0a1aace
+-- hash: 93b6c2ab872e3cb976574f2bfcf187b396bd4e48cfe53962f72169b22e299f44
 
 name:                SecurityAdvisoriesBuilder-hs
 version:             0.1.0.0
@@ -15,7 +15,6 @@ library
       src/
   ghc-options: -Wall
   exposed-modules:
-      Data.String.Strip
       Roave.SecurityAdvisories.FriendsOfPhp
   other-modules:
       Paths_SecurityAdvisoriesBuilder_hs
@@ -45,7 +44,6 @@ test-suite SecurityAdvisoriesBuilder-hs-test
       test/
   main-is: Spec.hs
   other-modules:
-      Data.String.StripSpec
       Roave.SecurityAdvisories.FriendsOfPhpSpec
       Paths_SecurityAdvisoriesBuilder_hs
   build-depends:

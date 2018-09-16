@@ -1,31 +1,32 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Roave.SecurityAdvisories.FriendsOfPhp (
-  parseAdvisoryYaml,
-  Advisory(..),
-  AffectedBranch(..)
-) where
 
-import Data.Map (Map)
-import Data.ByteString (ByteString)
-import Data.Text (Text)
-import Data.Yaml
-import qualified Data.Yaml as Y
+module Roave.SecurityAdvisories.FriendsOfPhp
+  ( parseAdvisoryYaml
+  , Advisory(..)
+  , AffectedBranch(..)
+  ) where
 
-data AffectedBranch = AffectedBranch {
-  time :: Maybe Text
+import           Data.ByteString (ByteString)
+import           Data.Map        (Map)
+import           Data.Text       (Text)
+import           Data.Yaml
+import qualified Data.Yaml       as Y
+
+data AffectedBranch = AffectedBranch
+  { time     :: Maybe Text
   , versions :: [Text]
-} deriving (Eq, Show)
+  } deriving (Eq, Show)
 
-data Advisory = Advisory {
-  title :: Maybe Text
-  , link :: Maybe Text
-  , cve :: Maybe Text
-  , branches :: Map Text AffectedBranch
+data Advisory = Advisory
+  { title     :: Maybe Text
+  , link      :: Maybe Text
+  , cve       :: Maybe Text
+  , branches  :: Map Text AffectedBranch
   , reference :: Maybe Text
-} deriving (Eq, Show)
+  } deriving (Eq, Show)
 
 parseAdvisoryYaml :: ByteString -> Either String Advisory
-parseAdvisoryYaml = Y.decodeEither
+parseAdvisoryYaml = decodeEither
 
 instance FromJSON AffectedBranch where
   parseJSON (Y.Object v) =

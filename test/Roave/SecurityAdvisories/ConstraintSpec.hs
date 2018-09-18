@@ -22,51 +22,51 @@ spec :: Spec
 spec = do
   -- https://github.com/Ocramius/SecurityAdvisoriesBuilder-hs/issues/2
   describe "parses version limits into well defined data" $ do
-    it "parses \"<=\"" $ do
+    it "parses \"<=\"" $
       makeVersionLimit "<=" `shouldBe` Right LessThanEquals
-    it "parses \"<\"" $ do
+    it "parses \"<\"" $
       makeVersionLimit "<" `shouldBe` Right LessThan
-    it "parses \"=\"" $ do
+    it "parses \"=\"" $
       makeVersionLimit "=" `shouldBe` Right Equals
-    it "parses \">\"" $ do
+    it "parses \">\"" $
       makeVersionLimit ">" `shouldBe` Right GreaterThan
-    it "parses \">=\"" $ do
+    it "parses \">=\"" $
       makeVersionLimit ">=" `shouldBe` Right GreaterThanEquals
-    it "does not parse \"potato\"" $ do
+    it "does not parse \"potato\"" $
       makeVersionLimit "potato" `shouldBe` Left "Unexpected version limit \"potato\" used"
-    it "does not parse \" >= \" (spaces around it)" $ do
+    it "does not parse \" >= \" (spaces around it)" $
       makeVersionLimit " >= " `shouldBe` Left "Unexpected version limit \" >= \" used"
 
   describe "turns lists of natural numbers into versions" $ do
-    it "does not consider an empty list as valid" $ do
+    it "does not consider an empty list as valid" $
       makeVersion [] `shouldBe` Left "No version number provided"
-    it "does consider a non-empty list as valid" $ do
+    it "does consider a non-empty list as valid" $
       -- note: using the incomplete function Data.List.NonEmpty.fromList is OK here, since the values are hardcoded
       makeVersion [1, 2, 3] `shouldBe` Right (Version (fromList [1, 2, 3]))
-    it "does consider a list with a single integer as valid" $ do
+    it "does consider a list with a single integer as valid" $
       makeVersion [1] `shouldBe` Right (Version (fromList [1]))
     -- see "Expecting exceptions from pure code" in https://hspec.github.io/expectations.html
-    it "negative versions are not valid" $ do
+    it "negative versions are not valid" $
       (evaluate . force) ((show (makeVersion [-1])) ++ "unused") `shouldThrow` anyArithException
 
   describe "versions can be sorted" $ do
-    it "0 = 0.0" $ do
+    it "0 = 0.0" $
       (v0 `compare` v00) `shouldBe` EQ
-    it "1.2 < 2.1" $ do
+    it "1.2 < 2.1" $
       (v12 `compare` v21) `shouldBe` LT
-    it "1.1 < 1.2" $ do
+    it "1.1 < 1.2" $
       (v11 `compare` v12) `shouldBe` LT
-    it "1.2 > 1.1" $ do
+    it "1.2 > 1.1" $
       (v12 `compare` v11) `shouldBe` GT
-    it "1.1 = 1.1" $ do
+    it "1.1 = 1.1" $
       (v11 `compare` v11) `shouldBe` EQ
-    it "1.1.0 = 1.1" $ do
+    it "1.1.0 = 1.1" $
       (v110 `compare` v11) `shouldBe` EQ
-    it "1.1.1 = 1.1" $ do
+    it "1.1.1 = 1.1" $
       (v111 `compare` v11) `shouldBe` GT
-    it "1.0.9 < 1.1" $ do
+    it "1.0.9 < 1.1" $
       (v109 `compare` v11) `shouldBe` LT
-    it "1.1.1 > 1.0.9" $ do
+    it "1.1.1 > 1.0.9" $
       (v111 `compare` v109) `shouldBe` GT
       where
         v0 = eitherToMaybeRight $ makeVersion [0]

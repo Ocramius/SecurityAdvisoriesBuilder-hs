@@ -3,8 +3,6 @@ module Roave.SecurityAdvisories.ConstraintSpec
   , spec
   ) where
 
-import Control.DeepSeq
-import Control.Exception
 import Data.List.NonEmpty
 
 import Test.Hspec
@@ -16,33 +14,45 @@ import Roave.SecurityAdvisories.Constraint
 main :: IO ()
 main = hspec spec
 
-eitherToMaybeRight :: Either a b -> Maybe b
-eitherToMaybeRight (Left _) = Nothing
-eitherToMaybeRight (Right b) = Just b
+doesNotParseVersionLimit :: String -> Expectation
+doesNotParseVersionLimit string = stringToVersionLimit string `shouldBe` Nothing
+
+doesNotParseVersion :: String -> Expectation
+doesNotParseVersion string = stringToVersion string `shouldBe` Nothing
+
+versionParsedAs :: String -> String -> Expectation
+versionParsedAs toBeParsed expected = Prelude.fmap show (stringToVersion toBeParsed) `shouldBe` Just expected
 
 spec :: Spec
 spec
   -- https://github.com/Ocramius/SecurityAdvisoriesBuilder-hs/issues/2
  = do
   describe "parses version limits into well defined data" $ do
-    it "parses \"<=\"" $ makeVersionLimit "<=" `shouldBe` Right LessThanEquals
-    it "parses \"<\"" $ makeVersionLimit "<" `shouldBe` Right LessThan
-    it "parses \"=\"" $ makeVersionLimit "=" `shouldBe` Right Equals
-    it "parses \">\"" $ makeVersionLimit ">" `shouldBe` Right GreaterThan
-    it "parses \">=\"" $ makeVersionLimit ">=" `shouldBe` Right GreaterThanEquals
-    it "does not parse \"potato\"" $
-      makeVersionLimit "potato" `shouldBe` Left "Unexpected version limit \"potato\" used"
-    it "does not parse \" >= \" (spaces around it)" $
-      makeVersionLimit " >= " `shouldBe` Left "Unexpected version limit \" >= \" used"
-  describe "turns lists of natural numbers into versions" $ do
-    it "does not consider an empty list as valid" $ makeVersion [] `shouldBe` Left "No version number provided"
-    it "does consider a non-empty list as valid" $
-      -- note: using the incomplete function Data.List.NonEmpty.fromList is OK here, since the values are hardcoded
-      makeVersion [1, 2, 3] `shouldBe` Right (Version (fromList [1, 2, 3]))
-    it "does consider a list with a single integer as valid" $ makeVersion [1] `shouldBe` Right (Version (fromList [1]))
-    -- see "Expecting exceptions from pure code" in https://hspec.github.io/expectations.html
-    it "negative versions are not valid" $
-      (evaluate . force) (show (makeVersion [-1]) ++ "unused") `shouldThrow` anyArithException
+    it "parses \"<=\"" $ stringToVersionLimit "<=" `shouldBe` Just LessThanEquals
+    it "parses \"<\"" $ stringToVersionLimit "<" `shouldBe` Just LessThan
+    it "parses \"=\"" $ stringToVersionLimit "=" `shouldBe` Just Equals
+    it "parses \">\"" $ stringToVersionLimit ">" `shouldBe` Just GreaterThan
+    it "parses \">=\"" $ stringToVersionLimit ">=" `shouldBe` Just GreaterThanEquals
+    it "does not parse \"potato\"" $ doesNotParseVersionLimit "potato"
+    it "does not parse \"\"" $ doesNotParseVersionLimit ""
+    it "does not parse \" >= \" (spaces around it)" $ doesNotParseVersionLimit " >= "
+  describe "parses versions into well defined data" $ do
+    it "does not parse \"\"" $ doesNotParseVersion ""
+    it "does not parse \"abc\"" $ doesNotParseVersion "abc"
+    it "does not parse \"  \"" $ doesNotParseVersion "  "
+    it "does not parse \"-1\"" $ doesNotParseVersion "-1"
+    it "does not parse \"1.-1\"" $ doesNotParseVersion "1.-1"
+    it "does not parse \"1. 1\"" $ doesNotParseVersion "1. 1"
+    it "does not parse \"1 .1\"" $ doesNotParseVersion "1 .1"
+    it "does not parse \"1.\"" $ doesNotParseVersion "1."
+    it "parses \"0\"" $ "0" `versionParsedAs` "0"
+    it "parses \"0.0\"" $ "0.0" `versionParsedAs` "0"
+    it "parses \"1\"" $ "1" `versionParsedAs` "1"
+    it "parses \"1.2.3.4\"" $ "1.2.3.4" `versionParsedAs` "1.2.3.4"
+    it "parses \"1.0.2\"" $ "1.0.2" `versionParsedAs` "1.0.2"
+    it "parses and normalises \"1.0.2.0\"" $ "1.0.2.0" `versionParsedAs` "1.0.2"
+    it "parses \"111.222.000.333.000\"" $ "111.222.000.333.000" `versionParsedAs` "111.222.0.333"
+    it "parses \"000\"" $ "000" `versionParsedAs` "0"
   describe "ranges can overlap" $ do
     it "can merge >= 1.2 with < 1.2" $
       From (VersionBoundary GreaterThanEquals (Version (fromList [1, 2]))) `canMergeRanges`
@@ -54,8 +64,8 @@ spec
       True
     it "can merge > 1.2, <= 1.3 with <= 1.2" $
       Range
-         (VersionBoundary GreaterThan (Version (fromList [1, 2])))
-         (VersionBoundary LessThanEquals (Version (fromList [1, 3]))) `canMergeRanges`
+        (VersionBoundary GreaterThan (Version (fromList [1, 2])))
+        (VersionBoundary LessThanEquals (Version (fromList [1, 3]))) `canMergeRanges`
       Till (VersionBoundary LessThanEquals (Version (fromList [1, 2]))) `shouldBe`
       True
   describe "versions can be sorted" $ do
@@ -69,11 +79,11 @@ spec
     it "1.0.9 < 1.1" $ (v109 `compare` v11) `shouldBe` LT
     it "1.1.1 > 1.0.9" $ (v111 `compare` v109) `shouldBe` GT
   where
-    v0 = eitherToMaybeRight $ makeVersion [0]
-    v00 = eitherToMaybeRight $ makeVersion [0, 0]
-    v11 = eitherToMaybeRight $ makeVersion [1, 1]
-    v110 = eitherToMaybeRight $ makeVersion [1, 1, 0]
-    v111 = eitherToMaybeRight $ makeVersion [1, 1, 1]
-    v109 = eitherToMaybeRight $ makeVersion [1, 0, 9]
-    v12 = eitherToMaybeRight $ makeVersion [1, 2]
-    v21 = eitherToMaybeRight $ makeVersion [2, 1]
+    v0 = stringToVersion "0"
+    v00 = stringToVersion "0.0"
+    v11 = stringToVersion "1.1"
+    v110 = stringToVersion "1.1.0"
+    v111 = stringToVersion "1.1.1"
+    v109 = stringToVersion "1.0.9"
+    v12 = stringToVersion "1.2"
+    v21 = stringToVersion "2.1"

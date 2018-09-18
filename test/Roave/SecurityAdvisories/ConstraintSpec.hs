@@ -42,7 +42,7 @@ spec
     it "does consider a list with a single integer as valid" $ makeVersion [1] `shouldBe` Right (Version (fromList [1]))
     -- see "Expecting exceptions from pure code" in https://hspec.github.io/expectations.html
     it "negative versions are not valid" $
-      (evaluate . force) ((show (makeVersion [-1])) ++ "unused") `shouldThrow` anyArithException
+      (evaluate . force) (show (makeVersion [-1]) ++ "unused") `shouldThrow` anyArithException
   describe "ranges can overlap" $ do
     it "can merge >= 1.2 with < 1.2" $
       From (VersionBoundary GreaterThanEquals (Version (fromList [1, 2]))) `canMergeRanges`

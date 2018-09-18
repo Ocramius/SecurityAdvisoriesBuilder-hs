@@ -37,8 +37,8 @@ makeVersionLimit ">" = Right GreaterThan
 makeVersionLimit ">=" = Right GreaterThanEquals
 makeVersionLimit unknownDelimiter = Left $ "Unexpected version limit \"" ++ unknownDelimiter ++ "\" used"
 
-makeVersion :: [Natural] -> Maybe Version
+makeVersion :: [Natural] -> Either String Version
 makeVersion xs =
-  case nonEmptyList of Nothing -> Nothing
-                       Just nonEmptyNaturals -> Just $ Version nonEmptyNaturals
+  case nonEmptyList of Nothing -> Left "No version number provided"
+                       Just nonEmptyNaturals -> Right $ Version nonEmptyNaturals
     where nonEmptyList = nonEmpty xs

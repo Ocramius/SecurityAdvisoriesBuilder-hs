@@ -11,6 +11,7 @@ module Roave.SecurityAdvisories.Constraint
 where
 
 import Data.List.NonEmpty
+import qualified Data.List.NonEmpty as N
 import Numeric.Natural
 
 data Version = Version (NonEmpty Natural)
@@ -38,7 +39,14 @@ makeVersionLimit ">=" = Right GreaterThanEquals
 makeVersionLimit unknownDelimiter = Left $ "Unexpected version limit \"" ++ unknownDelimiter ++ "\" used"
 
 makeVersion :: [Natural] -> Either String Version
+makeVersion [] = Left "No version number provided"
 makeVersion xs =
-  case nonEmptyList of Nothing -> Left "No version number provided"
-                       Just nonEmptyNaturals -> Right $ Version nonEmptyNaturals
-    where nonEmptyList = nonEmpty xs
+  case normalised of [] -> Right $ Version (fromList [0])
+                     _ -> Right $ Version (fromList normalised)
+    where normalised = normalisedVersionNumbers xs
+
+normalisedVersionNumbers :: [Natural] -> [Natural]
+normalisedVersionNumbers = Prelude.reverse . Prelude.dropWhile (== 0) . Prelude.reverse
+
+instance Ord Version where
+  (Version v1) `compare` (Version v2) = compare v1 v2

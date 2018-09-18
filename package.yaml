@@ -1,0 +1,40 @@
+name: SecurityAdvisoriesBuilder-hs
+
+version: 0.1.0.0
+
+ghc-options: -Wall
+
+dependencies:
+  - base
+
+library:
+  source-dirs: src/
+  default-extensions:
+    - OverloadedStrings
+  dependencies:
+    - bytestring >= 0.10.8 && < 0.11
+    - containers >= 0.5 && < 0.6
+    - yaml >= 0.8 && < 0.9
+    - text >= 1.2.3.0 && < 1.3
+
+executables:
+  SecurityAdvisoriesBuilder-hs-exe:
+    main: Main.hs
+    source-dirs: app/
+    dependencies:
+      SecurityAdvisoriesBuilder-hs
+
+tests:
+  SecurityAdvisoriesBuilder-hs-test:
+    main: Spec.hs
+    source-dirs: test/
+    default-extensions:
+      - OverloadedStrings
+      - QuasiQuotes
+    dependencies:
+      - SecurityAdvisoriesBuilder-hs
+      - bytestring >= 0.10.8 && < 0.11
+      - containers >= 0.5 && < 0.6
+      - raw-strings-qq >= 1.1 && < 1.2
+      - hspec >= 2.5.5 && < 2.6
+      - QuickCheck >= 2.11.3 && < 2.12

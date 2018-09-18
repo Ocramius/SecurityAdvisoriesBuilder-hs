@@ -1,32 +1,43 @@
 module Roave.SecurityAdvisories.Constraint
-(
-  Version(..),
-  VersionLimit(..),
-  VersionBoundary(..),
-  VersionRange(..),
-  VersionConstraintUnion(..),
-  makeVersionLimit,
-  makeVersion
-)
-where
+  ( Version(..)
+  , VersionLimit(..)
+  , VersionBoundary(..)
+  , VersionRange(..)
+  , VersionConstraintUnion(..)
+  , makeVersionLimit
+  , makeVersion
+  ) where
 
-import Data.List.NonEmpty
+import           Data.List.NonEmpty
 import qualified Data.List.NonEmpty as N
-import Numeric.Natural
+import           Numeric.Natural
 
-data Version = Version (NonEmpty Natural)
+data Version =
+  Version (NonEmpty Natural)
   deriving (Eq, Show, Ord)
 
-data VersionLimit = LessThanEquals | LessThan | Equals | GreaterThan | GreaterThanEquals
+data VersionLimit
+  = LessThanEquals
+  | LessThan
+  | Equals
+  | GreaterThan
+  | GreaterThanEquals
   deriving (Eq, Show)
 
-data VersionBoundary = VersionBoundary VersionLimit Version
+data VersionBoundary =
+  VersionBoundary VersionLimit
+                  Version
   deriving (Eq, Show)
 
-data VersionRange = Range VersionBoundary VersionBoundary | From VersionBoundary | Till VersionBoundary
+data VersionRange
+  = Range VersionBoundary
+          VersionBoundary
+  | From VersionBoundary
+  | Till VersionBoundary
   deriving (Eq, Show)
 
-data VersionConstraintUnion = ConstraintUnion (NonEmpty VersionRange)
+data VersionConstraintUnion =
+  ConstraintUnion (NonEmpty VersionRange)
   deriving (Eq, Show)
 
 -- | left side is an error message
@@ -41,9 +52,11 @@ makeVersionLimit unknownDelimiter = Left $ "Unexpected version limit \"" ++ unkn
 makeVersion :: [Natural] -> Either String Version
 makeVersion [] = Left "No version number provided"
 makeVersion xs =
-  case normalised of [] -> Right $ Version (fromList [0])
-                     _ -> Right $ Version (fromList normalised)
-    where normalised = normalisedVersionNumbers xs
+  case normalised of
+    [] -> Right $ Version (fromList [0])
+    _  -> Right $ Version (fromList normalised)
+  where
+    normalised = normalisedVersionNumbers xs
 
 normalisedVersionNumbers :: [Natural] -> [Natural]
 normalisedVersionNumbers = Prelude.reverse . Prelude.dropWhile (== 0) . Prelude.reverse

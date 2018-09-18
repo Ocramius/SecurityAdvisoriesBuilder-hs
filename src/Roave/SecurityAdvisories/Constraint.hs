@@ -15,7 +15,7 @@ import qualified Data.List.NonEmpty as N
 import Numeric.Natural
 
 data Version = Version (NonEmpty Natural)
-  deriving (Eq, Show)
+  deriving (Eq, Show, Ord)
 
 data VersionLimit = LessThanEquals | LessThan | Equals | GreaterThan | GreaterThanEquals
   deriving (Eq, Show)
@@ -47,6 +47,3 @@ makeVersion xs =
 
 normalisedVersionNumbers :: [Natural] -> [Natural]
 normalisedVersionNumbers = Prelude.reverse . Prelude.dropWhile (== 0) . Prelude.reverse
-
-instance Ord Version where
-  (Version v1) `compare` (Version v2) = compare v1 v2

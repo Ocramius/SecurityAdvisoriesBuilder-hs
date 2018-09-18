@@ -3,13 +3,13 @@ module Roave.SecurityAdvisories.ConstraintSpec
   , spec
   ) where
 
-import           Control.DeepSeq
-import           Control.Exception
-import           Data.List.NonEmpty
+import Control.DeepSeq
+import Control.Exception
+import Data.List.NonEmpty
 
-import           Test.Hspec
+import Test.Hspec
 
-import           Roave.SecurityAdvisories.Constraint
+import Roave.SecurityAdvisories.Constraint
 
 -- `main` is here so that this module can be run from GHCi on its own.  It is
 -- not needed for automatic spec discovery.
@@ -17,7 +17,7 @@ main :: IO ()
 main = hspec spec
 
 eitherToMaybeRight :: Either a b -> Maybe b
-eitherToMaybeRight (Left _)  = Nothing
+eitherToMaybeRight (Left _) = Nothing
 eitherToMaybeRight (Right b) = Just b
 
 spec :: Spec
@@ -43,6 +43,21 @@ spec
     -- see "Expecting exceptions from pure code" in https://hspec.github.io/expectations.html
     it "negative versions are not valid" $
       (evaluate . force) ((show (makeVersion [-1])) ++ "unused") `shouldThrow` anyArithException
+  describe "ranges can overlap" $ do
+    it "can merge >= 1.2 with < 1.2" $
+      From (VersionBoundary GreaterThanEquals (Version (fromList [1, 2]))) `canMergeRanges`
+      Till (VersionBoundary LessThan (Version (fromList [1, 2]))) `shouldBe`
+      True
+    it "can merge > 1.2 with <= 1.2" $
+      From (VersionBoundary GreaterThan (Version (fromList [1, 2]))) `canMergeRanges`
+      Till (VersionBoundary LessThanEquals (Version (fromList [1, 2]))) `shouldBe`
+      True
+    it "can merge > 1.2, <= 1.3 with <= 1.2" $
+      Range
+         (VersionBoundary GreaterThan (Version (fromList [1, 2])))
+         (VersionBoundary LessThanEquals (Version (fromList [1, 3]))) `canMergeRanges`
+      Till (VersionBoundary LessThanEquals (Version (fromList [1, 2]))) `shouldBe`
+      True
   describe "versions can be sorted" $ do
     it "0 = 0.0" $ (v0 `compare` v00) `shouldBe` EQ
     it "1.2 < 2.1" $ (v12 `compare` v21) `shouldBe` LT

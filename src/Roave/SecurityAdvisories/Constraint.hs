@@ -6,6 +6,7 @@ module Roave.SecurityAdvisories.Constraint
   , VersionConstraintUnion(..)
   , makeVersionLimit
   , makeVersion
+  , canMergeRanges
   ) where
 
 import           Data.List.NonEmpty
@@ -60,3 +61,31 @@ makeVersion xs =
 
 normalisedVersionNumbers :: [Natural] -> [Natural]
 normalisedVersionNumbers = Prelude.reverse . Prelude.dropWhile (== 0) . Prelude.reverse
+
+-- @TODO these rules seem a bit silly - can probably do with Ord + adjacency checks
+versionLimitsCanBeAdjacent :: VersionLimit -> VersionLimit -> Bool
+versionLimitsCanBeAdjacent LessThanEquals GreaterThan = True
+versionLimitsCanBeAdjacent LessThan GreaterThanEquals = True
+versionLimitsCanBeAdjacent GreaterThan LessThanEquals = True
+versionLimitsCanBeAdjacent GreaterThanEquals LessThan = True
+versionLimitsCanBeAdjacent GreaterThan Equals = True
+versionLimitsCanBeAdjacent LessThan Equals = True
+versionLimitsCanBeAdjacent Equals GreaterThan = True
+versionLimitsCanBeAdjacent Equals LessThan = True
+versionLimitsCanBeAdjacent _ _ = False
+
+canMergeRanges :: VersionRange -> VersionRange -> Bool
+canMergeRanges (From (VersionBoundary vl1 version1)) (Till (VersionBoundary vl2 version2)) = (vl1 `versionLimitsCanBeAdjacent` vl2) && version1 == version2
+canMergeRanges (Till (VersionBoundary vl1 version1)) (From (VersionBoundary vl2 version2)) = (vl1 `versionLimitsCanBeAdjacent` vl2) && version1 == version2
+canMergeRanges (Range (VersionBoundary vl1 version1) _) (Till (VersionBoundary vl2 version2)) = (vl1 `versionLimitsCanBeAdjacent` vl2) && version1 == version2
+canMergeRanges (Range _ (VersionBoundary vl1 version1)) (From (VersionBoundary vl2 version2)) = (vl1 `versionLimitsCanBeAdjacent` vl2) && version1 == version2
+canMergeRanges _ _ = False
+
+rangeContainsRange :: VersionRange -> VersionRange -> Bool
+rangeContainsRange = undefined
+
+rangeOverlapsWithRange :: VersionRange -> VersionRange -> Bool
+rangeOverlapsWithRange = undefined
+
+rangeAdjacentToRange :: VersionRange -> VersionRange -> Bool
+rangeAdjacentToRange = undefined

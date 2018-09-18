@@ -1,6 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-
 module Roave.SecurityAdvisories.FriendsOfPhpSpec (main, spec) where
 
 import Data.Map (singleton)

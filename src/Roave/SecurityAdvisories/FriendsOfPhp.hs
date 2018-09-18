@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Roave.SecurityAdvisories.FriendsOfPhp
   ( parseAdvisoryYaml
   , Advisory(..)

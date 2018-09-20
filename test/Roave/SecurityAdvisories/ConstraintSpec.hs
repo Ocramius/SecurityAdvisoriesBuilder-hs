@@ -29,6 +29,13 @@ versionParsedAs toBeParsed expected = Prelude.fmap versionToString (stringToVers
 versionBoundaryParsedAs :: String -> String -> Expectation
 versionBoundaryParsedAs toBeParsed expected = Prelude.fmap versionBoundaryToString (stringToBoundary toBeParsed) `shouldBe` Just expected
 
+-- | non-complete function - not happy with this, but my HS-fu is still weak
+makeVersionBoundary :: String -> VersionBoundary
+makeVersionBoundary boundary =
+  case maybeABoundary of Nothing -> error "should really never happened"
+                         Just v -> v
+  where maybeABoundary = stringToBoundary boundary
+
 spec :: Spec
 spec
   -- https://github.com/Ocramius/SecurityAdvisoriesBuilder-hs/issues/2
@@ -105,20 +112,9 @@ spec
     it "parses \"  <=  1.2.3   \"" $ "  <=  1.2.3   " `versionBoundaryParsedAs` "<=1.2.3"
     it "parses \"  <  1.2.3   \"" $ "  <  1.2.3   " `versionBoundaryParsedAs` "<1.2.3"
   describe "ranges can overlap" $ do
-    it "can merge >= 1.2 with < 1.2" $
-      From (VersionBoundary GreaterThanEquals (Version (fromList [1, 2]))) `canMergeRanges`
-      Till (VersionBoundary LessThan (Version (fromList [1, 2]))) `shouldBe`
-      True
-    it "can merge > 1.2 with <= 1.2" $
-      From (VersionBoundary GreaterThan (Version (fromList [1, 2]))) `canMergeRanges`
-      Till (VersionBoundary LessThanEquals (Version (fromList [1, 2]))) `shouldBe`
-      True
-    it "can merge > 1.2, <= 1.3 with <= 1.2" $
-      Range
-        (VersionBoundary GreaterThan (Version (fromList [1, 2])))
-        (VersionBoundary LessThanEquals (Version (fromList [1, 3]))) `canMergeRanges`
-      Till (VersionBoundary LessThanEquals (Version (fromList [1, 2]))) `shouldBe`
-      True
+    it "can merge >=1.2 with <1.2" $ From (makeVersionBoundary ">=1.2") `canMergeRanges` Till (makeVersionBoundary "<1.2") `shouldBe` True
+    it "can merge >1.2 with <=1.2" $ From (makeVersionBoundary ">1.2") `canMergeRanges` Till (makeVersionBoundary "<=1.2") `shouldBe` True
+    it "can merge >1.2, <=1.3 with <=1.2" $ Range (makeVersionBoundary ">1.2") (makeVersionBoundary "<=1.3") `canMergeRanges` Till (makeVersionBoundary "<=1.2") `shouldBe` True
   describe "versions can be sorted" $ do
     it "0 = 0.0" $ (v0 `compare` v00) `shouldBe` EQ
     it "1.2 < 2.1" $ (v12 `compare` v21) `shouldBe` LT

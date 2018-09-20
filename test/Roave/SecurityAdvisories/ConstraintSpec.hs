@@ -20,8 +20,14 @@ doesNotParseVersionLimit string = stringToVersionLimit string `shouldBe` Nothing
 doesNotParseVersion :: String -> Expectation
 doesNotParseVersion string = stringToVersion string `shouldBe` Nothing
 
+doesNotParseVersionBoundary :: String -> Expectation
+doesNotParseVersionBoundary string = stringToBoundary string `shouldBe` Nothing
+
 versionParsedAs :: String -> String -> Expectation
 versionParsedAs toBeParsed expected = Prelude.fmap versionToString (stringToVersion toBeParsed) `shouldBe` Just expected
+
+versionBoundaryParsedAs :: String -> String -> Expectation
+versionBoundaryParsedAs toBeParsed expected = Prelude.fmap versionBoundaryToString (stringToBoundary toBeParsed) `shouldBe` Just expected
 
 spec :: Spec
 spec
@@ -53,6 +59,51 @@ spec
     it "parses and normalises \"1.0.2.0\"" $ "1.0.2.0" `versionParsedAs` "1.0.2"
     it "parses \"111.222.000.333.000\"" $ "111.222.000.333.000" `versionParsedAs` "111.222.0.333"
     it "parses \"000\"" $ "000" `versionParsedAs` "0"
+  describe "version boundaries can be parsed" $ do
+    it "does not parse \"\"" $ doesNotParseVersionBoundary ""
+    it "does not parse \" \"" $ doesNotParseVersionBoundary " "
+    it "does not parse \"foo\"" $ doesNotParseVersionBoundary "foo"
+    it "does not parse \"1\"" $ doesNotParseVersionBoundary "1"
+    it "does not parse \"1.2.3\"" $ doesNotParseVersionBoundary "1.2.3"
+    it "does not parse \"1.2.3=\"" $ doesNotParseVersionBoundary "1.2.3="
+    it "does not parse \"1.2.3<=\"" $ doesNotParseVersionBoundary "1.2.3<="
+    it "does not parse \"1.2.3<\"" $ doesNotParseVersionBoundary "1.2.3<"
+    it "does not parse \"1.2.3>=\"" $ doesNotParseVersionBoundary "1.2.3>="
+    it "does not parse \"<\"" $ doesNotParseVersionBoundary "<"
+    it "does not parse \"<=\"" $ doesNotParseVersionBoundary "<="
+    it "does not parse \">=\"" $ doesNotParseVersionBoundary ">="
+    it "does not parse \"=\"" $ doesNotParseVersionBoundary "="
+    it "does not parse \"><\"" $ doesNotParseVersionBoundary "><"
+    it "does not parse \"<>\"" $ doesNotParseVersionBoundary "<>"
+    it "does not parse \"=>\"" $ doesNotParseVersionBoundary "=>"
+    it "does not parse \"=<\"" $ doesNotParseVersionBoundary "=<"
+    it "does not parse \"=>1.2\"" $ doesNotParseVersionBoundary "=>1.2"
+    it "does not parse \"=<1.2\"" $ doesNotParseVersionBoundary "=<1.2"
+    it "parses \">1.2.3\"" $ ">1.2.3" `versionBoundaryParsedAs` ">1.2.3"
+    it "parses \">=1.2.3\"" $ ">=1.2.3" `versionBoundaryParsedAs` ">=1.2.3"
+    it "parses \"=1.2.3\"" $ "=1.2.3" `versionBoundaryParsedAs` "=1.2.3"
+    it "parses \"<=1.2.3\"" $ "<=1.2.3" `versionBoundaryParsedAs` "<=1.2.3"
+    it "parses \"<1.2.3\"" $ "<1.2.3" `versionBoundaryParsedAs` "<1.2.3"
+    it "parses \">1.2.3.0\"" $ ">1.2.3.0" `versionBoundaryParsedAs` ">1.2.3"
+    it "parses \">=1.2.3.0\"" $ ">=1.2.3.0" `versionBoundaryParsedAs` ">=1.2.3"
+    it "parses \"=1.2.3.0\"" $ "=1.2.3.0" `versionBoundaryParsedAs` "=1.2.3"
+    it "parses \"<=1.2.3.0\"" $ "<=1.2.3.0" `versionBoundaryParsedAs` "<=1.2.3"
+    it "parses \"<1.2.3.0\"" $ "<1.2.3.0" `versionBoundaryParsedAs` "<1.2.3"
+    it "parses \">1.0\"" $ ">1.0" `versionBoundaryParsedAs` ">1"
+    it "parses \">=1.0\"" $ ">=1.0" `versionBoundaryParsedAs` ">=1"
+    it "parses \"=1.0\"" $ "=1.0" `versionBoundaryParsedAs` "=1"
+    it "parses \"<=1.0\"" $ "<=1.0" `versionBoundaryParsedAs` "<=1"
+    it "parses \"<1.0\"" $ "<1.0" `versionBoundaryParsedAs` "<1"
+    it "parses \">  1.2.3\"" $ ">  1.2.3" `versionBoundaryParsedAs` ">1.2.3"
+    it "parses \">=  1.2.3\"" $ ">=  1.2.3" `versionBoundaryParsedAs` ">=1.2.3"
+    it "parses \"=  1.2.3\"" $ "=  1.2.3" `versionBoundaryParsedAs` "=1.2.3"
+    it "parses \"<=  1.2.3\"" $ "<=  1.2.3" `versionBoundaryParsedAs` "<=1.2.3"
+    it "parses \"<  1.2.3\"" $ "<  1.2.3" `versionBoundaryParsedAs` "<1.2.3"
+    it "parses \"  >  1.2.3   \"" $ "  >  1.2.3   " `versionBoundaryParsedAs` ">1.2.3"
+    it "parses \"  >=  1.2.3   \"" $ "  >=  1.2.3   " `versionBoundaryParsedAs` ">=1.2.3"
+    it "parses \"  =  1.2.3   \"" $ "  =  1.2.3   " `versionBoundaryParsedAs` "=1.2.3"
+    it "parses \"  <=  1.2.3   \"" $ "  <=  1.2.3   " `versionBoundaryParsedAs` "<=1.2.3"
+    it "parses \"  <  1.2.3   \"" $ "  <  1.2.3   " `versionBoundaryParsedAs` "<1.2.3"
   describe "ranges can overlap" $ do
     it "can merge >= 1.2 with < 1.2" $
       From (VersionBoundary GreaterThanEquals (Version (fromList [1, 2]))) `canMergeRanges`

@@ -9,6 +9,7 @@ module Roave.SecurityAdvisories.Constraint
   , stringToBoundary
   , stringToVersionLimit
   , stringToVersion
+  , versionBoundaryToString
   ) where
 
 import Data.List
@@ -52,6 +53,16 @@ data VersionConstraintUnion =
 
 versionToString :: Version -> String
 versionToString (Version v) = intercalate "." . toList . N.map show $ v
+
+versionLimitToString :: VersionLimit -> String
+versionLimitToString LessThanEquals = "<="
+versionLimitToString LessThan = "<"
+versionLimitToString Equals = "="
+versionLimitToString GreaterThan = ">"
+versionLimitToString GreaterThanEquals = ">="
+
+versionBoundaryToString :: VersionBoundary -> String
+versionBoundaryToString (VersionBoundary vl v) = versionLimitToString vl ++ versionToString v
 
 normalisedVersionNumbers :: [Natural] -> [Natural]
 normalisedVersionNumbers toBeNormalised =
@@ -126,6 +137,9 @@ versionLimit =
 
 boundary :: Parser VersionBoundary
 boundary = do
+  skipMany spaceChar
   l <- versionLimit
+  skipMany spaceChar
   v <- parseVersion
+  skipMany spaceChar
   return (VersionBoundary l v)

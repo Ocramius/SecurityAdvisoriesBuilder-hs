@@ -21,7 +21,7 @@ doesNotParseVersion :: String -> Expectation
 doesNotParseVersion string = stringToVersion string `shouldBe` Nothing
 
 versionParsedAs :: String -> String -> Expectation
-versionParsedAs toBeParsed expected = Prelude.fmap show (stringToVersion toBeParsed) `shouldBe` Just expected
+versionParsedAs toBeParsed expected = Prelude.fmap versionToString (stringToVersion toBeParsed) `shouldBe` Just expected
 
 spec :: Spec
 spec

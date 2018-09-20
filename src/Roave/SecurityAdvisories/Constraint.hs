@@ -4,7 +4,7 @@ module Roave.SecurityAdvisories.Constraint
   , VersionBoundary(..)
   , VersionRange(..)
   , VersionConstraintUnion(..)
-  , makeVersion
+  , versionToString
   , canMergeRanges
   , stringToBoundary
   , stringToVersionLimit
@@ -24,7 +24,7 @@ import Text.Megaparsec.Expr
 
 data Version =
   Version (NonEmpty Natural)
-  deriving (Eq, Ord)
+  deriving (Eq, Show, Ord)
 
 data VersionLimit
   = LessThanEquals
@@ -50,17 +50,8 @@ data VersionConstraintUnion =
   ConstraintUnion (NonEmpty VersionRange)
   deriving (Eq, Show)
 
-instance Show Version where
-  show (Version v) = intercalate "." (toList (N.map show v))
-
-makeVersion :: [Natural] -> Either String Version
-makeVersion [] = Left "No version number provided"
-makeVersion xs =
-  case normalised of
-    [] -> Right $ Version (fromList [0])
-    _ -> Right $ Version (fromList normalised)
-  where
-    normalised = normalisedVersionNumbers xs
+versionToString :: Version -> String
+versionToString (Version v) = intercalate "." (toList (N.map show v))
 
 normalisedVersionNumbers :: [Natural] -> [Natural]
 normalisedVersionNumbers toBeNormalised =

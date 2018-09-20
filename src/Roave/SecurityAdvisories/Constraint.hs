@@ -51,7 +51,7 @@ data VersionConstraintUnion =
   deriving (Eq, Show)
 
 versionToString :: Version -> String
-versionToString (Version v) = intercalate "." (toList (N.map show v))
+versionToString (Version v) = intercalate "." . toList . N.map show $ v
 
 normalisedVersionNumbers :: [Natural] -> [Natural]
 normalisedVersionNumbers toBeNormalised =
